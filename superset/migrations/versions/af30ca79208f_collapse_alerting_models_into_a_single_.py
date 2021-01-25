@@ -118,15 +118,24 @@ def upgrade():
             sa.Column("validator_config", sa.Text(), default="", nullable=True),
         )
         op.add_column(
-            "alerts", sa.Column("database_id", sa.Integer(), default=0, nullable=False),
+            "alerts", sa.Column("database_id", sa.Integer(), default=0, nullable=True),
         )
-        op.add_column("alerts", sa.Column("sql", sa.Text(), default="", nullable=False))
+        op.execute("UPDATE alerts SET database_id = 1")
+        op.alter_column('alerts', 'database_id', nullable=False)
+
+        op.add_column("alerts", sa.Column("sql", sa.Text(), default="", nullable=True))
+        op.execute("UPDATE alerts SET sql = '' ")
+        op.alter_column('alerts', 'sql', nullable=False)
+
         op.add_column(
             "alerts",
             sa.Column(
-                "validator_type", sa.String(length=100), default="", nullable=False
+                "validator_type", sa.String(length=100), default="", nullable=True
             ),
         )
+        op.execute("UPDATE alerts SET validator_type = '' ")
+        op.alter_column('alerts', 'validator_type', nullable=False)
+        
     # Migrate data
     session = db.Session(bind=bind)
     alerts = session.query(Alert).all()
